@@ -58,8 +58,8 @@ class Comparison(object):
                 "fields": {
                     "throughput": req['throughput'],
                     "total": req['total'],
-                    "ok": req['ok'],
-                    "ko": req['ko'],
+                    "ok": req['OK'],
+                    "ko": req['KO'],
                     "1xx": req['1xx'],
                     "2xx": req['2xx'],
                     "3xx": req['3xx'],
