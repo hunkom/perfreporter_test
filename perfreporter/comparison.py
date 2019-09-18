@@ -1,4 +1,3 @@
-import csv
 from time import time
 import datetime
 from influxdb import InfluxDBClient
@@ -19,7 +18,7 @@ class Comparison(object):
         comparison = []
         client = InfluxDBClient(self.args["influx_host"], self.args['influx_port'],
                                 username=self.args['influx_user'], password=self.args['influx_password'],
-                                database=self.args['influx_db'])
+                                database=self.args['influx_database'])
         for request in test_results:
             data = client.query(SELECT_DATA_FROM_INFLUX.format(str(request['request_name']), str(request['build_id'])))
             data = list(data.get_points())
