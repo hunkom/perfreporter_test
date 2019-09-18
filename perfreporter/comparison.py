@@ -21,10 +21,22 @@ class Comparison(object):
                                 database=self.args['influx_database'])
         for request in test_results:
             data = client.query(SELECT_DATA_FROM_INFLUX.format(str(request['request_name']), str(request['build_id'])))
-            data = list(data.get_points())
-            print("**************************************")
-            print(request['request_name'])
-            print(data)
+            data = list(data.get_points())[0]
+            request["throughput"] = data['Throughput']
+            request["min"] = data['min']
+            request["max"] = data['max']
+            request["mean"] = data['mean']
+            request["pct50"] = data['pct50']
+            request["pct75"] = data['pct75']
+            request["pct90"] = data['pct90']
+            request["pct95"] = data['pct95']
+            request["pct99"] = data['pct99']
+            comparison.append(request)
+
+        print("*******************************************")
+        for req in comparison:
+            print(req)
+            print("____________________________________")
 
 
         #self.write_to_comparison_db(comparison)
