@@ -23,14 +23,14 @@ class Comparison(object):
             data = client.query(SELECT_DATA_FROM_INFLUX.format(str(request['request_name']), str(request['build_id'])))
             data = list(data.get_points())[0]
             request["throughput"] = data['Throughput']
-            request["min"] = data['min']
-            request["max"] = data['max']
-            request["mean"] = data['mean']
-            request["pct50"] = data['pct50']
-            request["pct75"] = data['pct75']
-            request["pct90"] = data['pct90']
-            request["pct95"] = data['pct95']
-            request["pct99"] = data['pct99']
+            request["min"] = data['Min']
+            request["max"] = data['Max']
+            request["mean"] = data['Mean']
+            request["pct50"] = data['pct_50']
+            request["pct75"] = data['pct_75']
+            request["pct90"] = data['pct_90']
+            request["pct95"] = data['pct_95']
+            request["pct99"] = data['pct_99']
             comparison.append(request)
 
         print("*******************************************")
