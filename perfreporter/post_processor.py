@@ -20,4 +20,5 @@ class DistributedModePostProcessor:
                 f.write(self.config_file)
         reporter = Reporter()
         loki, rp_service, jira_service = reporter.parse_config_file(self.args)
-        print(loki)
+        reporter.report_errors(self.aggregated_errors, self.errors, self.args, loki, rp_service, jira_service)
+
