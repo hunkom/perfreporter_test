@@ -4,7 +4,7 @@ from perfreporter.reporter import Reporter
 
 class PostProcessor:
 
-    def __init__(self, args, aggregated_errors, errors, comparison_data, config_file=None):
+    def __init__(self, args, aggregated_errors, errors, comparison_data=None, config_file=None):
         self.aggregated_errors = aggregated_errors
         self.errors = errors
         self.comparison_data = comparison_data
