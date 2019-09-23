@@ -86,7 +86,7 @@ class JiraWrapper:
 
     def post_issue(self, issue_data):
         issue = self.client.create_issue(fields=issue_data)
-        print("Issue " + issue.key + " created." + " Description - " + issue_data['description'])
+        print("Issue " + issue.key + " created." + " Description - " + issue_data['summary'])
         return issue
 
     def get_or_create_issue(self, search_string, issue_data):
