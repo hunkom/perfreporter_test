@@ -20,7 +20,7 @@ SELECT_THRESHOLDS = "select last(red) as red, last(yellow) as yellow from thresh
                     "and simulation=\'{}\'"
 
 
-class Comparison(object):
+class DataManager(object):
     def __init__(self, arguments):
         self.args = arguments
         self.baseline = None
