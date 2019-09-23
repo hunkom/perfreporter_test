@@ -173,13 +173,19 @@ class JiraWrapper:
                       "|borderStyle=solid|borderColor=#ccc|titleBGColor=#23b7c9|bgColor=#d7f0f3} \n"
         description += "{color:red}" + "Percentage of requests exceeding the threshold was {}%." \
             .format(missed_threshold_rate) + "{color} \n"
-        description += "h3. The following requests exceeded the yellow threshold:\n"
+        for request in compare_with_thresholds:
+            if request['threshold'] == 'yellow':
+                description += "h3. The following requests exceeded the yellow threshold:\n"
+                break
         for request in compare_with_thresholds:
             if request['threshold'] == 'yellow':
                 description += "\"" + request['request_name'] + "\" reached " + str(request['response_time'])\
                                + " ms by " + arguments['comparison_metric'] + ". Threshold - " + str(request['yellow'])\
                                + " ms.\n"
-        description += "h3. The following requests exceeded the red threshold:\n"
+        for request in compare_with_thresholds:
+            if request['threshold'] == 'red':
+                description += "h3. The following requests exceeded the red threshold:\n"
+                break
         for request in compare_with_thresholds:
             if request['threshold'] == 'red':
                 description += "\"" + request['request_name'] + "\" reached " + str(request['response_time'])\
