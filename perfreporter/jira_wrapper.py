@@ -85,8 +85,8 @@ class JiraWrapper:
         self.client.add_attachment(issue, attachment, filename)
 
     def post_issue(self, issue_data):
-        print("Issue " + issue_data['issuetype']['name'] + " created")
         issue = self.client.create_issue(fields=issue_data)
+        print("Issue " + issue.key + " created." + " Description - " + issue_data['description'])
         return issue
 
     def get_or_create_issue(self, search_string, issue_data):
