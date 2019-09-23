@@ -111,6 +111,8 @@ class Comparison(object):
         if self.baseline:
             return self.baseline
         self.client.switch_database(self.args['influx_comparison_database'])
+        print(SELECT_BASELINE_BUILD_ID.format(self.args['simulation'], self.args['type'],
+                                            str(self.args['users']), self.args['simulation']))
         baseline_build_id = self.client.query(
             SELECT_BASELINE_BUILD_ID.format(self.args['simulation'], self.args['type'],
                                             str(self.args['users']), self.args['simulation']))
@@ -119,7 +121,7 @@ class Comparison(object):
             return None
         _id = result[0]['build_id']
         baseline_data = self.client.query(SELECT_BASELINE_DATA.format(_id))
-        self.baseline = list(baseline_data.get_pounts())[0]
+        self.baseline = list(baseline_data.get_pounts())
         return self.baseline
 
     def get_last_build(self):
@@ -127,5 +129,5 @@ class Comparison(object):
             return self.last_build_data
         self.client.switch_database(self.args['influx_comparison_database'])
         test_data = self.client.query(SELECT_LAST_BUILD_DATA.format(self.args['build_id']))
-        self.last_build_data = list(test_data.get_points())[0]
+        self.last_build_data = list(test_data.get_points())
         return self.last_build_data
