@@ -121,7 +121,7 @@ class Comparison(object):
             return None
         _id = result[0]['build_id']
         baseline_data = self.client.query(SELECT_BASELINE_DATA.format(_id))
-        self.baseline = list(baseline_data[0].get_pounts())
+        self.baseline = list(baseline_data.get_points())
         return self.baseline
 
     def get_last_build(self):
