@@ -17,18 +17,12 @@ class DistributedModePostProcessor:
         influx_comparison.write_comparison_data_to_influx(self.comparison_data)
         performance_degradation_rate, compare_with_baseline = influx_comparison.compare_with_baseline()
         missed_threshold_rate, compare_with_thresholds = influx_comparison.compare_with_thresholds()
-        print("**************************************")
-        print(performance_degradation_rate)
-        print(compare_with_baseline)
-        print("**************************************")
-        print("**************************************")
-        print(missed_threshold_rate)
-        print(compare_with_thresholds)
-        print("**************************************")
         if self.config_file:
             with open("/tmp/config.yaml", "wb") as f:
                 f.write(self.config_file)
         reporter = Reporter()
         loki, rp_service, jira_service = reporter.parse_config_file(self.args)
         reporter.report_errors(self.aggregated_errors, self.errors, self.args, loki, rp_service, jira_service)
-
+        reporter.report_performance_degradation(performance_degradation_rate, compare_with_baseline, rp_service,
+                                                jira_service)
+        reporter.report_missed_thresholds(missed_threshold_rate, compare_with_thresholds, rp_service, jira_service)
