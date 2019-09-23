@@ -127,5 +127,5 @@ class Comparison(object):
             return self.last_build_data
         self.client.switch_database(self.args['influx_comparison_database'])
         test_data = self.client.query(SELECT_LAST_BUILD_DATA.format(self.args['build_id']))
-        self.last_build_data = list(test_data.get_points())
+        self.last_build_data = list(test_data[0].get_points())
         return self.last_build_data
