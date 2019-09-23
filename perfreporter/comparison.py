@@ -119,7 +119,7 @@ class Comparison(object):
             return None
         _id = result[0]['build_id']
         baseline_data = self.client.query(SELECT_BASELINE_DATA.format(_id))
-        self.baseline = list(baseline_data[0].get_pounts())
+        self.baseline = list(baseline_data.get_pounts())[0]
         return self.baseline
 
     def get_last_build(self):
@@ -127,5 +127,5 @@ class Comparison(object):
             return self.last_build_data
         self.client.switch_database(self.args['influx_comparison_database'])
         test_data = self.client.query(SELECT_LAST_BUILD_DATA.format(self.args['build_id']))
-        self.last_build_data = list(test_data[0].get_points())
+        self.last_build_data = list(test_data.get_points())[0]
         return self.last_build_data
