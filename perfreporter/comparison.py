@@ -110,9 +110,24 @@ class Comparison(object):
                                                       "response_time": request[comparison_metric],
                                                       "baseline": baseline_request[comparison_metric]
                                                       })
-        performance_degradation_rate = round(float(len(last_build) / len(compare_with_baseline)) * 100, 2)
+        performance_degradation_rate = round(float(len(compare_with_baseline) / len(last_build)) * 100, 2)
 
         return performance_degradation_rate, compare_with_baseline
+
+    def compare_with_thresholds(self):
+        last_build = self.get_last_build()
+        last_build = self.append_api_thresholds_to_test_data(last_build)
+        compare_with_thresholds = []
+        comparison_metric = self.args['comparison_metric']
+        for request in last_build:
+            if request[comparison_metric + '_threshold'] is not 'green':
+                compare_with_thresholds.append({"request_name": request['request_name'],
+                                                "response_time": request[comparison_metric],
+                                                "threshold": request[comparison_metric + '_threshold'],
+                                                "yellow": request['yellow_threshold_value'],
+                                                "red": request["red_threshold_value"]})
+        missed_threshold_rate = round(float(len(compare_with_thresholds) / len(last_build)) * 100, 2)
+        return missed_threshold_rate, compare_with_thresholds
 
     def get_baseline(self):
         if self.baseline:
@@ -136,3 +151,33 @@ class Comparison(object):
         test_data = self.client.query(SELECT_LAST_BUILD_DATA.format(self.args['build_id']))
         self.last_build_data = list(test_data.get_points())
         return self.last_build_data
+
+    def append_api_thresholds_to_test_data(self, test):
+        self.client.switch_database(self.args['influx_thresholds_database'])
+        test_data_with_thresholds = []
+        comparison_metric = self.args['comparison_metric']
+        for request in test:
+            request_data = {}
+            threshold = self.client.query(SELECT_THRESHOLDS.format(str(request['request_name']),
+                                                                   str(request['simulation'])))
+            if len(list(threshold.get_points())) == 0:
+                red_threshold = 3000
+                yellow_threshold = 2000
+            else:
+                red_threshold = int(list(threshold.get_points())[0]['red'])
+                yellow_threshold = int(list(threshold.get_points())[0]['yellow'])
+
+            request_data['yellow_threshold_value'] = yellow_threshold
+            request_data['red_threshold_value'] = red_threshold
+            request_data['request_name'] = request['request_name']
+            request_data[comparison_metric] = request[comparison_metric]
+
+            if int(request[comparison_metric]) > red_threshold:
+                request_data[comparison_metric + '_threshold'] = 'red'
+            elif int(request[comparison_metric]) > yellow_threshold:
+                request_data[comparison_metric + '_threshold'] = 'yellow'
+            else:
+                request_data[comparison_metric + '_threshold'] = 'green'
+
+            test_data_with_thresholds.append(request_data)
+        return test_data_with_thresholds
