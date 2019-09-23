@@ -9,10 +9,22 @@ SELECT_DATA_FROM_INFLUX = "SELECT last(tpsRate) as Throughput, min(responseTime)
                                 "percentile(responseTime, 99) as pct_99 FROM requestsRaw WHERE " \
                                 "\"requestName\"=\'{}\' and buildID=\'{}\'"
 
+SELECT_LAST_BUILD_DATA = "select * from api_comparison where build_id=\'{}\'"
+
+SELECT_BASELINE_BUILD_ID = "select last(pct95), build_id from api_comparison where simulation=\'{}\' and " \
+                           "test_type=\'{}\' and \"users\"=\'{}\' and build_id=~/audit_{}_/"
+
+SELECT_BASELINE_DATA = "select * from api_comparison where build_id=\'{}\'"
+
+SELECT_THRESHOLDS = "select last(red) as red, last(yellow) as yellow from threshold where request_name=\'{}\' " \
+                    "and simulation=\'{}\'"
+
 
 class Comparison(object):
     def __init__(self, arguments):
         self.args = arguments
+        self.baseline = None
+        self.last_build_data = None
         self.client = InfluxDBClient(self.args["influx_host"], self.args['influx_port'],
                                      username=self.args['influx_user'], password=self.args['influx_password'])
 
@@ -80,6 +92,40 @@ class Comparison(object):
         try:
             self.client.switch_database(self.args['influx_comparison_database'])
             self.client.write_points(points)
-            self.client.close()
         except Exception as e:
             print(e)
+
+    def compare_with_baseline(self):
+        baseline = self.get_baseline()
+        last_build = self.get_last_build()
+        print("******************************************************")
+        print("Baseline ---->")
+        print(baseline)
+        print("******************************************************")
+        print("Last build ---->")
+        print(last_build)
+        print("******************************************************")
+        return None, None
+
+    def get_baseline(self):
+        if self.baseline:
+            return self.baseline
+        self.client.switch_database(self.args['influx_comparison_database'])
+        baseline_build_id = self.client.query(
+            SELECT_BASELINE_BUILD_ID.format(self.args['simulation'], self.args['type'],
+                                            str(self.args['users']), self.args['simulation']))
+        result = list(baseline_build_id.get_points())
+        if len(result) == 0:
+            return None
+        _id = result[0]['build_id']
+        baseline_data = self.client.query(SELECT_BASELINE_DATA.format(_id))
+        self.baseline = list(baseline_data[0].get_pounts())
+        return self.baseline
+
+    def get_last_build(self):
+        if self.last_build_data:
+            return self.last_build_data
+        self.client.switch_database(self.args['influx_comparison_database'])
+        test_data = self.client.query(SELECT_LAST_BUILD_DATA.format(self.args['build_id']))
+        self.last_build_data = list(test_data.get_points())
+        return self.last_build_data
