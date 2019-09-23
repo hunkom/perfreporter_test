@@ -16,6 +16,10 @@ class DistributedModePostProcessor:
         influx_comparison = Comparison(self.args)
         influx_comparison.write_comparison_data_to_influx(self.comparison_data)
         performance_degradation_rate, compare_with_baseline = influx_comparison.compare_with_baseline()
+        print("**************************************")
+        print(performance_degradation_rate)
+        print(compare_with_baseline)
+        print("**************************************")
         if self.config_file:
             with open("/tmp/config.yaml", "wb") as f:
                 f.write(self.config_file)

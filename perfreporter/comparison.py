@@ -98,21 +98,26 @@ class Comparison(object):
     def compare_with_baseline(self):
         baseline = self.get_baseline()
         last_build = self.get_last_build()
-        print("******************************************************")
-        print("Baseline ---->")
-        print(baseline)
-        print("******************************************************")
-        print("Last build ---->")
-        print(last_build)
-        print("******************************************************")
-        return None, None
+        comparison_metric = self.args['comparison_metric']
+        compare_with_baseline = []
+        if not baseline:
+            return 0, []
+        for request in last_build:
+            for baseline_request in baseline:
+                if request['request_name'] == baseline_request['request_name']:
+                    if int(request[comparison_metric]) > int(baseline_request[comparison_metric]):
+                        compare_with_baseline.append({"request_name": request['request_name'],
+                                                      "response_time": request[comparison_metric],
+                                                      "baseline": baseline_request[comparison_metric]
+                                                      })
+        performance_degradation_rate = round(float(len(last_build) / len(compare_with_baseline)) * 100, 2)
+
+        return performance_degradation_rate, compare_with_baseline
 
     def get_baseline(self):
         if self.baseline:
             return self.baseline
         self.client.switch_database(self.args['influx_comparison_database'])
-        print(SELECT_BASELINE_BUILD_ID.format(self.args['simulation'], self.args['type'],
-                                            str(self.args['users']), self.args['simulation']))
         baseline_build_id = self.client.query(
             SELECT_BASELINE_BUILD_ID.format(self.args['simulation'], self.args['type'],
                                             str(self.args['users']), self.args['simulation']))
