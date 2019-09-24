@@ -23,7 +23,6 @@ SELECT_THRESHOLDS = "select last(red) as red, last(yellow) as yellow from thresh
 class DataManager(object):
     def __init__(self, arguments):
         self.args = arguments
-        self.baseline = None
         self.last_build_data = None
         self.client = InfluxDBClient(self.args["influx_host"], self.args['influx_port'],
                                      username=self.args['influx_user'], password=self.args['influx_password'])
