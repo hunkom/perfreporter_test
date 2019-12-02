@@ -2,6 +2,9 @@ from perfreporter.data_manager import DataManager
 from perfreporter.reporter import Reporter
 import requests
 import re
+import shutil
+from os import remove
+import json
 
 
 class PostProcessor:
@@ -27,14 +30,30 @@ class PostProcessor:
 
     def distributed_mode_post_processing(self, galloper_url, results_bucket, build_id):
         errors = []
+        args = {}
         r = requests.get(f'{galloper_url}/artifacts?q={results_bucket}')
         pattern = '<a href="/artifacts/{}/({}.+?)"'.format(results_bucket, build_id)
-        m = re.findall(pattern, r.text)
+        files = re.findall(pattern, r.text)
+        for file in files:
+            downloaded_file = requests.get(f'{galloper_url}/artifacts/{results_bucket}/{file}')
+            with open(f"/tmp/{file}", 'wb') as f:
+                f.write(downloaded_file.text)
+            shutil.unpack_archive(f"/tmp/{file}", "/tmp/" + file.replace(".zip", ""), 'zip')
+            remove(f"/tmp/{file}")
+            with open(f"/tmp/{file}/".replace(".zip", "") + "aggregated_errors.json", "r") as f:
+                errors.append(json.loads(f.read()))
+            if not args:
+                with open(f"/tmp/{file}/".replace(".zip", "") + "args.json", "r") as f:
+                    args = json.loads(f.read())
+
+
         print("******************************************************************")
-        print(m)
+        print(args)
+        print(errors)
         print("******************************************************************")
         aggregated_errors = self.aggregate_errors(errors)
-        print("Zdarove! Ya HZ chto delat")
+        print(aggregated_errors)
+        print("******************************************************************")
 
     @staticmethod
     def aggregate_errors(test_errors):
