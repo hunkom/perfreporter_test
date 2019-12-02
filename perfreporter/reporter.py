@@ -1,6 +1,4 @@
 import sys
-import logging
-import logging_loki
 import yaml
 
 from perfreporter.report_portal import ReportPortal
@@ -19,16 +17,6 @@ class Reporter(object):
             config = yaml.load(f.read())
         if config:
             report_types = list(config.keys())
-
-        loki = None
-        if 'loki' in report_types:
-            loki_host = config['loki'].get("host")
-            loki_port = config['loki'].get("port")
-            if not all([loki_host, loki_port]):
-                print("Loki configuration values missing, proceeding "
-                      "without Loki")
-            else:
-                loki = "{}:{}/api/prom/push".format(loki_host, loki_port)
 
         rp_service = None
         if 'reportportal' in report_types:
@@ -74,27 +62,10 @@ class Reporter(object):
                                            performance_degradation_rate, missed_thresholds_rate, jira_issue_type,
                                            jira_lables, jira_watchers, jira_epic_key)
 
-        return loki, rp_service, jira_service
+        return rp_service, jira_service
 
     @staticmethod
-    def report_errors(aggregated_errors, errors, args, loki, rp_service, jira_service):
-        if loki:
-            handler = logging_loki.LokiHandler(
-                url=loki,
-                tags={"Test": args['simulation']},
-            )
-            error_message = "Error key: {};; UTC Time: {};; Request name: {};; Method: {};; Response code: {};;" \
-                            " URL: {};; Error message: {};; Request params: {};; Headers: {};; Response body: {};;"
-            logger = logging.getLogger("error-logger")
-            logger.addHandler(handler)
-            for error in errors:
-                logger.error(
-                    error_message.format(str(error['error_key']), str(error['Time']), str(error['Request name']),
-                                         str(error['Method']), str(error['Response code']),
-                                         str(error['Request URL']), str(error['Error_message']),
-                                         str(error['Request_params']), str(error['Request headers']),
-                                         str(error['Response'])))
-
+    def report_errors(aggregated_errors, rp_service, jira_service):
         if rp_service and rp_service.check_functional_errors:
             rp_service.report_errors(aggregated_errors)
 
