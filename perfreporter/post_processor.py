@@ -26,6 +26,7 @@ class PostProcessor:
     def distributed_mode_post_processing(self, galloper_url, results_bucket, build_id):
         errors = []
         aggregated_errors = self.aggregate_errors(errors)
+        print("Zdarove! Ya HZ chto delat")
 
     @staticmethod
     def aggregate_errors(test_errors):
