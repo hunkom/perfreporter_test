@@ -37,7 +37,7 @@ class PostProcessor:
         for file in files:
             downloaded_file = requests.get(f'{galloper_url}/artifacts/{results_bucket}/{file}')
             with open(f"/tmp/{file}", 'wb') as f:
-                f.write(downloaded_file.text)
+                f.write(downloaded_file.text.encode())
             shutil.unpack_archive(f"/tmp/{file}", "/tmp/" + file.replace(".zip", ""), 'zip')
             remove(f"/tmp/{file}")
             with open(f"/tmp/{file}/".replace(".zip", "") + "aggregated_errors.json", "r") as f:
@@ -54,6 +54,7 @@ class PostProcessor:
         aggregated_errors = self.aggregate_errors(errors)
         print(aggregated_errors)
         print("******************************************************************")
+        self.post_processing(args, aggregated_errors)
 
     @staticmethod
     def aggregate_errors(test_errors):
