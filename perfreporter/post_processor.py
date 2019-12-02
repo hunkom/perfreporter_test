@@ -1,6 +1,7 @@
 from perfreporter.data_manager import DataManager
 from perfreporter.reporter import Reporter
 import requests
+import re
 
 
 class PostProcessor:
@@ -27,8 +28,10 @@ class PostProcessor:
     def distributed_mode_post_processing(self, galloper_url, results_bucket, build_id):
         errors = []
         r = requests.get(f'{galloper_url}/artifacts?q={results_bucket}')
+        pattern = '<a href="/artifacts/{}/({}.+?)"'.format(results_bucket, build_id)
+        m = re.findall(pattern, r.text)
         print("******************************************************************")
-        print(r.text)
+        print(m)
         print("******************************************************************")
         aggregated_errors = self.aggregate_errors(errors)
         print("Zdarove! Ya HZ chto delat")
