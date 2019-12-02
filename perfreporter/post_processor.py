@@ -2,7 +2,8 @@ from perfreporter.data_manager import DataManager
 from perfreporter.reporter import Reporter
 import requests
 import re
-import zipfile
+import shutil
+from os import remove
 import json
 
 
@@ -35,10 +36,16 @@ class PostProcessor:
         files = re.findall(pattern, r.text)
         for file in files:
             downloaded_file = requests.get(f'{galloper_url}/artifacts/{results_bucket}/{file}')
-            zip_file_object = zipfile.ZipFile(downloaded_file, 'r')
-            errors.append(json.loads(zip_file_object.open("aggregated_errors.json")))
+            with open(f"/tmp/{file}", 'wb') as f:
+                f.write(downloaded_file.content)
+            shutil.unpack_archive(f"/tmp/{file}", "/tmp/" + file.replace(".zip", ""), 'zip')
+            remove(f"/tmp/{file}")
+            with open(f"/tmp/{file}/".replace(".zip", "") + "aggregated_errors.json", "r") as f:
+                errors.append(json.loads(f.read()))
             if not args:
-                args = json.loads(json.loads(zip_file_object.open("args.json")))
+                with open(f"/tmp/{file}/".replace(".zip", "") + "args.json", "r") as f:
+                    args = json.loads(f.read())
+
 
         print("******************************************************************")
         print(args)
