@@ -45,6 +45,7 @@ class PostProcessor:
             if not args:
                 with open(f"/tmp/{file}/".replace(".zip", "") + "args.json", "r") as f:
                     args = json.loads(f.read())
+            requests.get(f'{galloper_url}/artifacts/{results_bucket}/{file}/delete')
 
 
         print("******************************************************************")
