@@ -28,12 +28,15 @@ class PostProcessor:
                                                     jira_service)
             reporter.report_missed_thresholds(missed_threshold_rate, compare_with_thresholds, rp_service, jira_service)
 
-    def distributed_mode_post_processing(self, galloper_url, results_bucket, build_id):
+    def distributed_mode_post_processing(self, galloper_url, results_bucket, prefix):
         errors = []
         args = {}
+        # get list of files
         r = requests.get(f'{galloper_url}/artifacts?q={results_bucket}')
-        pattern = '<a href="/artifacts/{}/({}.+?)"'.format(results_bucket, build_id)
+        pattern = '<a href="/artifacts/{}/({}.+?)"'.format(results_bucket, prefix)
         files = re.findall(pattern, r.text)
+
+        # download and unpack each file
         for file in files:
             downloaded_file = requests.get(f'{galloper_url}/artifacts/{results_bucket}/{file}')
             with open(f"/tmp/{file}", 'wb') as f:
@@ -45,16 +48,11 @@ class PostProcessor:
             if not args:
                 with open(f"/tmp/{file}/".replace(".zip", "") + "args.json", "r") as f:
                     args = json.loads(f.read())
+
+            # delete file from minio
             requests.get(f'{galloper_url}/artifacts/{results_bucket}/{file}/delete')
 
-
-        print("******************************************************************")
-        print(args)
-        print(errors)
-        print("******************************************************************")
         aggregated_errors = self.aggregate_errors(errors)
-        print(aggregated_errors)
-        print("******************************************************************")
         self.post_processing(args, aggregated_errors)
 
     @staticmethod
