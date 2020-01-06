@@ -24,6 +24,10 @@ class PostProcessor:
             data_manager.write_comparison_data_to_influx()
             performance_degradation_rate, compare_with_baseline = data_manager.compare_with_baseline()
             missed_threshold_rate, compare_with_thresholds = data_manager.compare_with_thresholds()
+            print("**************************")
+            print(missed_threshold_rate)
+            print(compare_with_thresholds)
+            print("**************************")
             reporter.report_performance_degradation(performance_degradation_rate, compare_with_baseline, rp_service,
                                                     jira_service)
             reporter.report_missed_thresholds(missed_threshold_rate, compare_with_thresholds, rp_service, jira_service)
