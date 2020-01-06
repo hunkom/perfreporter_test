@@ -3,6 +3,7 @@ import datetime
 from influxdb import InfluxDBClient
 import numpy as np
 import operator
+from copy import deepcopy
 
 SELECT_LAST_BUILD_DATA = "select * from api_comparison where build_id=\'{}\'"
 
@@ -212,7 +213,7 @@ class DataManager(object):
         self.client.switch_database(self.args['comparison_db'])
         tp: list = list(self.client.query(CALCULATE_TOTAL_THROUGHPUT.format(self.args['build_id'])).get_points())
         aggregated_dict = all_metics[0]
-        aggregated_dict['throughput'] = tp[0]['throughput']
+        aggregated_dict['throughput'] = round(float(tp[0]['throughput']), 2)
         aggregated_dict['ko'] = tp[0]['ko']
         aggregated_dict['total'] = tp[0]['total']
         aggregated_dict['request_name'] = 'all'
@@ -249,20 +250,26 @@ class DataManager(object):
             if each['scope'] not in individual_dict:
                 individual_dict[each['scope']] = []
             individual_dict[each['scope']].append(each)
+        print(individual_dict)
         for request in test:
-            thresholds = every_applicable
+            thresholds = []
+            targets = []
             if request['request_name'] in individual_dict:
+                for ind in individual_dict[request['request_name']]:
+                    targets.append(ind['target'])
                 thresholds.extend(individual_dict[request['request_name']])
+            for th in every_applicable:
+                if th['target'] not in targets:
+                    thresholds.append(th)
             for th in thresholds:
-                _checked, compare_with_thresholds = compile_violation(request, th, total_checked,
-                                                                      compare_with_thresholds)
-                total_checked += _checked
+                total_checked, compare_with_thresholds = compile_violation(request, th, total_checked,
+                                                                           compare_with_thresholds)
         if globaly_applicable:
             test_data = self.aggregate_test()
+            print(test_data)
             for th in globaly_applicable:
-                _checked, compare_with_thresholds = compile_violation(test_data, th, total_checked,
-                                                                      compare_with_thresholds)
-                total_checked += _checked
+                total_checked, compare_with_thresholds = compile_violation(test_data, th, total_checked,
+                                                                           compare_with_thresholds)
         violation = 0
         if total_checked:
             violation = round(float(len(compare_with_thresholds) / total_checked) * 100, 2)
@@ -298,17 +305,18 @@ class DataManager(object):
             test_data_with_thresholds.append(request_data)
         return test_data_with_thresholds
 
-# if __name__ == "__main__":
-#     arguments = {
-#         "influx_host": "localhost",
-#         "influx_port": 8086,
-#         "influx_user": "",
-#         "influx_password": "",
-#         "influx_db": "jmeter",
-#         "simulation": "Flood",
-#         "comparison_db": "comparison",
-#         "thresholds_db": "thresholds",
-#         "build_id": "build_8a863dcc-4be6-4853-bdba-29a01e4d11c7"
-#     }
-#     dm = DataManager(arguments)
-#     print(dm.get_thresholds(dm.get_last_build()))
+
+if __name__ == "__main__":
+    arguments = {
+         "influx_host": "10.23.7.53",
+         "influx_port": 8086,
+         "influx_user": "",
+         "influx_password": "",
+         "influx_db": "jmeter",
+         "simulation": "Flood",
+         "comparison_db": "comparison",
+         "thresholds_db": "thresholds",
+         "build_id": "Flood_debug_22379"
+     }
+    dm = DataManager(arguments)
+    print(dm.get_thresholds(dm.get_last_build()))
