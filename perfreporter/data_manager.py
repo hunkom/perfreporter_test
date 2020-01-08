@@ -22,9 +22,12 @@ SELECT_TEST_DATA = "select * from {} where build_id='{}'"
 
 SELECT_ALL_THRESHOLDS = "select * from thresholds where simulation='{}' {}"
 
-CALCULATE_TOTAL_THROUGHPUT = "select  sum(throughput) as \"throughput\", sum(ko) as \"ko\", sum(total) as \"total\" from api_comparison where build_id='{}'"
+CALCULATE_TOTAL_THROUGHPUT = "select  sum(throughput) as \"throughput\", sum(ko) as \"ko\", " \
+                             "sum(total) as \"total\" from api_comparison where build_id='{}'"
 
-CALCULATE_ALL_AGGREGATION = "select max(response_time), min(response_time), ROUND(MEAN(response_time)) as avg, PERCENTILE(response_time, 95) as pct95, PERCENTILE(response_time, 50) as pct50 from {} where build_id='{}'"
+CALCULATE_ALL_AGGREGATION = "select max(response_time), min(response_time), ROUND(MEAN(response_time)) " \
+                            "as avg, PERCENTILE(response_time, 95) as pct95, PERCENTILE(response_time, 50) " \
+                            "as pct50 from {} where build_id='{}'"
 
 COMPARISON_RULES = {"gte": "ge", "lte": "le", "gt": "gt", "lt": "lt", "eq": "eq"}
 
@@ -213,7 +216,7 @@ class DataManager(object):
         self.client.switch_database(self.args['comparison_db'])
         tp: list = list(self.client.query(CALCULATE_TOTAL_THROUGHPUT.format(self.args['build_id'])).get_points())
         aggregated_dict = all_metics[0]
-        aggregated_dict['throughput'] = round(float(tp[0]['throughput']), 2)
+        aggregated_dict['throughput'] = round(tp[0]['throughput'], 2)
         aggregated_dict['ko'] = tp[0]['ko']
         aggregated_dict['total'] = tp[0]['total']
         aggregated_dict['request_name'] = 'all'
@@ -239,18 +242,18 @@ class DataManager(object):
             return total_checked, compare_with_thresholds
 
         self.client.switch_database(self.args['thresholds_db'])
-        globaly_applicable: list = list(
-            self.client.query(SELECT_ALL_THRESHOLDS.format(str(test[0]['simulation']), "AND scope='all'")).get_points())
+        globaly_applicable: list = list(self.client.query(
+            SELECT_ALL_THRESHOLDS.format(str(test[0]['simulation']), "AND scope='all'")).get_points())
         every_applicable: list = list(self.client.query(
             SELECT_ALL_THRESHOLDS.format(str(test[0]['simulation']), "AND scope='every'")).get_points())
-        individual: list = list(self.client.query(SELECT_ALL_THRESHOLDS.format(str(test[0]['simulation']),
-                                                                               "AND scope!='all' AND scope!='every'")).get_points())
+        individual: list = list(self.client.query(
+            SELECT_ALL_THRESHOLDS.format(str(test[0]['simulation']),
+                                         "AND scope!='all' AND scope!='every'")).get_points())
         individual_dict: dict = dict()
         for each in individual:
             if each['scope'] not in individual_dict:
                 individual_dict[each['scope']] = []
             individual_dict[each['scope']].append(each)
-        print(individual_dict)
         for request in test:
             thresholds = []
             targets = []
@@ -262,14 +265,13 @@ class DataManager(object):
                 if th['target'] not in targets:
                     thresholds.append(th)
             for th in thresholds:
-                total_checked, compare_with_thresholds = compile_violation(request, th, total_checked,
-                                                                           compare_with_thresholds)
+                total_checked, compare_with_thresholds = compile_violation(
+                    request, th, total_checked, compare_with_thresholds)
         if globaly_applicable:
             test_data = self.aggregate_test()
-            print(test_data)
             for th in globaly_applicable:
-                total_checked, compare_with_thresholds = compile_violation(test_data, th, total_checked,
-                                                                           compare_with_thresholds)
+                total_checked, compare_with_thresholds = compile_violation(
+                    test_data, th, total_checked, compare_with_thresholds)
         violation = 0
         if total_checked:
             violation = round(float(len(compare_with_thresholds) / total_checked) * 100, 2)
@@ -305,18 +307,17 @@ class DataManager(object):
             test_data_with_thresholds.append(request_data)
         return test_data_with_thresholds
 
-
-if __name__ == "__main__":
-    arguments = {
-         "influx_host": "10.23.7.53",
-         "influx_port": 8086,
-         "influx_user": "",
-         "influx_password": "",
-         "influx_db": "jmeter",
-         "simulation": "Flood",
-         "comparison_db": "comparison",
-         "thresholds_db": "thresholds",
-         "build_id": "Flood_debug_22379"
-     }
-    dm = DataManager(arguments)
-    print(dm.get_thresholds(dm.get_last_build()))
+# if __name__ == "__main__":
+#     arguments = {
+#         "influx_host": "localhost",
+#         "influx_port": 8086,
+#         "influx_user": "",
+#         "influx_password": "",
+#         "influx_db": "jmeter",
+#         "simulation": "Flood",
+#         "comparison_db": "comparison",
+#         "thresholds_db": "thresholds",
+#         "build_id": "build_8a863dcc-4be6-4853-bdba-29a01e4d11c7"
+#     }
+#     dm = DataManager(arguments)
+#     print(dm.get_thresholds(dm.get_last_build()))
