@@ -202,7 +202,7 @@ class DataManager(object):
         elif threshold['target'] == 'throughput':
             metric = request['throughput']
         else:  # Will be in case error_rate is set as target
-            metric = request['ko'] / request['total']
+            metric = round(float(request['ko'] / request['total']) * 100, 2)
         if comparison_method(metric, threshold['red']):
             return "red", metric
         if comparison_method(metric, threshold['yellow']):
