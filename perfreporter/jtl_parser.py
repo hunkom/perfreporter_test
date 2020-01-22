@@ -12,15 +12,19 @@ class JTLParser(object):
     def parse_jtl():
         path = "/tmp/reports/jmeter.xml"
         unparsed_counter = 0
-        requests = []
+        requests = {}
         with open(path, 'r+', encoding="utf-8") as tsv:
-            for entry in csv.DictReader(tsv, delimiter=",", fieldnames=FIELDNAMES, restval="not_found"):
+            entries = csv.DictReader(tsv, delimiter=",", fieldnames=FIELDNAMES, restval="not_found")
+
+            for entry in entries:
                 try:
-                    data = {'request_name': entry['request_name'],
-                            'response_time': entry['response_time'],
-                            'status': entry['success'],
-                            'failureMessage': entry['failureMessage']}
-                    requests.append(data)
+                    if entry['request_name'] != 'label':
+                        if entry['request_name'] not in requests:
+                            data = {'request_name': entry['request_name'],
+                                    'response_time': [entry['response_time']]}
+                            requests[entry['request_name']] = data
+                        else:
+                            requests[entry['request_name']]['response_time'].append(entry['response_time'])
                 except Exception as e:
                     print(e)
                     unparsed_counter += 1
