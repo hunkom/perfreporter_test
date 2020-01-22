@@ -32,7 +32,7 @@ class PostProcessor:
         else:
             requests = JTLParser.parse_jtl()
             for req in requests:
-                print(req)
+                print(requests[req])
         reporter.report_errors(aggregated_errors, rp_service, jira_service, performance_degradation_rate,
                                compare_with_baseline, missed_threshold_rate, compare_with_thresholds)
 
