@@ -30,9 +30,9 @@ class PostProcessor:
                                                     jira_service)
             reporter.report_missed_thresholds(missed_threshold_rate, compare_with_thresholds, rp_service, jira_service)
         else:
-            parser = JTLParser()
             requests = JTLParser.parse_jtl()
-            print(requests)
+            for req in requests:
+                print(req)
         reporter.report_errors(aggregated_errors, rp_service, jira_service, performance_degradation_rate,
                                compare_with_baseline, missed_threshold_rate, compare_with_thresholds)
 
