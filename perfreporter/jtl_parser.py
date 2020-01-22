@@ -21,7 +21,6 @@ class JTLParser(object):
                 try:
                     if entry['request_name'] != 'label':
                         if re.search(r'-\d+$', entry['request_name']):
-                            if entry['request_name'] not in requests:
                                 continue
                         if entry['request_name'] not in requests:
                             data = {'request_name': entry['request_name'],
