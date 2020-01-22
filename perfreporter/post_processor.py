@@ -1,5 +1,6 @@
 from perfreporter.data_manager import DataManager
 from perfreporter.reporter import Reporter
+from perfreporter.jtl_parser import JTLParser
 import requests
 import re
 import shutil
@@ -19,18 +20,21 @@ class PostProcessor:
                 f.write(self.config_file)
         reporter = Reporter()
         rp_service, jira_service = reporter.parse_config_file(args)
-        reporter.report_errors(aggregated_errors, rp_service, jira_service)
+        performance_degradation_rate, missed_threshold_rate = 0, 0
+        compare_with_baseline, compare_with_thresholds = [], []
         if args['influx_host']:
             data_manager.write_comparison_data_to_influx()
             performance_degradation_rate, compare_with_baseline = data_manager.compare_with_baseline()
             missed_threshold_rate, compare_with_thresholds = data_manager.compare_with_thresholds()
-            print("**************************")
-            print(missed_threshold_rate)
-            print(compare_with_thresholds)
-            print("**************************")
             reporter.report_performance_degradation(performance_degradation_rate, compare_with_baseline, rp_service,
                                                     jira_service)
             reporter.report_missed_thresholds(missed_threshold_rate, compare_with_thresholds, rp_service, jira_service)
+        else:
+            parser = JTLParser()
+            requests = JTLParser.parse_jtl()
+            print(requests)
+        reporter.report_errors(aggregated_errors, rp_service, jira_service, performance_degradation_rate,
+                               compare_with_baseline, missed_threshold_rate, compare_with_thresholds)
 
     def distributed_mode_post_processing(self, galloper_url, results_bucket, prefix):
         errors = []
@@ -56,6 +60,7 @@ class PostProcessor:
             # delete file from minio
             requests.get(f'{galloper_url}/artifacts/{results_bucket}/{file}/delete')
 
+        # aggregate errors from each load generator
         aggregated_errors = self.aggregate_errors(errors)
         self.post_processing(args, aggregated_errors)
 
