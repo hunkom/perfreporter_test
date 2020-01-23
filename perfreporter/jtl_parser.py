@@ -10,8 +10,7 @@ FIELDNAMES = 'timeStamp', 'response_time', 'request_name', "status_code", "respo
 
 class JTLParser(object):
 
-    @staticmethod
-    def parse_jtl():
+    def parse_jtl(self):
         log_file = "/tmp/reports/jmeter.jtl"
         unparsed_counter = 0
         requests = {}
@@ -35,8 +34,9 @@ class JTLParser(object):
                             data = {'request_name': entry['request_name'],
                                     'response_time': [entry['response_time']]}
                             if entry['success'] == 'true':
-                                data['OK'] = 1
-                                data['KO'] = 0
+                                data['OK'], data['KO'] = 1, 0
+                            else:
+                                data['OK'], data['KO'] = 0, 1
                             requests[entry['request_name']] = data
                         else:
                             requests[entry['request_name']]['response_time'].append(entry['response_time'])
@@ -53,4 +53,12 @@ class JTLParser(object):
             print("Unparsed errors: %d" % unparsed_counter)
         duration = int((end_timestamp - start_timestamp)/1000)
         print(duration)
+        throughput = self.calculate_throughput(requests, duration)
+        print(throughput)
         return requests
+
+    def calculate_throughput(self, requests, duration):
+        count = 0
+        for req in requests:
+            count += requests[req]['OK']
+        return round(float(count/duration), 2)
