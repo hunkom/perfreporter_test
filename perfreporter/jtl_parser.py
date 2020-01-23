@@ -18,16 +18,21 @@ class JTLParser(object):
             entries = csv.DictReader(tsv, delimiter=",", fieldnames=FIELDNAMES, restval="not_found")
 
             for entry in entries:
+                print("*******************************")
+                print(entry)
+                print("*******************************")
                 try:
                     if entry['request_name'] != 'label':
                         if re.search(r'-\d+$', entry['request_name']):
                                 continue
                         if entry['request_name'] not in requests:
                             data = {'request_name': entry['request_name'],
-                                    'response_time': [entry['response_time']]}
+                                    'response_time': [entry['response_time']],
+                                    'count': 1}
                             requests[entry['request_name']] = data
                         else:
                             requests[entry['request_name']]['response_time'].append(entry['response_time'])
+                            requests[entry['request_name']]['count'] += 1
                 except Exception as e:
                     print(e)
                     unparsed_counter += 1
