@@ -4,7 +4,7 @@ from perfreporter.jtl_parser import JTLParser
 import requests
 import re
 import shutil
-from os import remove
+from os import remove, environ
 import json
 
 
@@ -32,11 +32,14 @@ class PostProcessor:
         else:
             parser = JTLParser()
             results = parser.parse_jtl()
-            requests = results['requests']
-            for req in requests:
-                print(requests[req])
+            aggregated_requests = results['requests']
+            for req in aggregated_requests:
+                print(aggregated_requests[req])
             print("Throughput - " + str(results['throughput']))
             print("Error_rate - " + str(results['error_rate']))
+            print("******************************")
+            thresholds = self.calculate_thresholds(results)
+            print(thresholds)
 
         reporter.report_errors(aggregated_errors, rp_service, jira_service, performance_degradation_rate,
                                compare_with_baseline, missed_threshold_rate, compare_with_thresholds)
@@ -81,3 +84,38 @@ class PostProcessor:
                                                             + int(errors[err]['Error count'])
 
         return aggregated_errors
+
+    @staticmethod
+    def calculate_thresholds(results):
+        thresholds = []
+        tp_threshold = environ.get('tp_threshold', 10)
+        rt_threshold = environ.get('rt_threshold', 500)
+        er_threshold = environ.get('er_threshold', 5)
+
+        if results['throughput'] < tp_threshold:
+            thresholds.append({"target": "throughput", "scope": "all", "value": results['throughput'],
+                               "threshold": tp_threshold, "status": "FAILED"})
+        else:
+            thresholds.append({"target": "throughput", "scope": "all", "value": results['throughput'],
+                               "threshold": tp_threshold, "status": "PASSED"})
+
+        if results['error_rate'] > er_threshold:
+            thresholds.append({"target": "error_rate", "scope": "all", "value": results['error_rate'],
+                               "threshold": er_threshold, "status": "FAILED"})
+        else:
+            thresholds.append({"target": "error_rate", "scope": "all", "value": results['error_rate'],
+                               "threshold": er_threshold, "status": "PASSED"})
+
+        for req in results['requests']:
+
+            if results['requests'][req]['response_time'] > rt_threshold:
+                thresholds.append({"target": "response_time", "scope": "each",
+                                   "value": results['requests'][req]['response_time'],
+                                   "threshold": rt_threshold, "status": "FAILED"})
+            else:
+                thresholds.append({"target": "response_time", "scope": "each",
+                                   "value": results['requests'][req]['response_time'],
+                                   "threshold": rt_threshold, "status": "PASSED"})
+
+        return thresholds
+
