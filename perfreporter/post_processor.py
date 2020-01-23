@@ -90,9 +90,9 @@ class PostProcessor:
     @staticmethod
     def calculate_thresholds(results):
         thresholds = []
-        tp_threshold = int(environ.get('tp_threshold', 10))
-        rt_threshold = int(environ.get('rt_threshold', 500))
-        er_threshold = int(environ.get('er_threshold', 5))
+        tp_threshold = int(environ.get('tp', 10))
+        rt_threshold = int(environ.get('rt', 500))
+        er_threshold = int(environ.get('er', 5))
 
         if results['throughput'] < tp_threshold:
             thresholds.append({"target": "throughput", "scope": "all", "value": results['throughput'],
