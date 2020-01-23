@@ -14,7 +14,7 @@ class JTLParser(object):
         path = "/tmp/reports/jmeter.xml"
         unparsed_counter = 0
         requests = {}
-        start_timestamp, end_timestamp = int(float('inf')), 0
+        start_timestamp, end_timestamp = float('inf'), 0
         with open(path, 'r+', encoding="utf-8") as tsv:
             entries = csv.DictReader(tsv, delimiter=",", fieldnames=FIELDNAMES, restval="not_found")
 
