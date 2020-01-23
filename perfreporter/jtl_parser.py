@@ -1,6 +1,7 @@
 import csv
 import re
 from os import path
+import numpy as np
 
 
 FIELDNAMES = 'timeStamp', 'response_time', 'request_name', "status_code", "responseMessage", "threadName", "dataType",\
@@ -51,14 +52,28 @@ class JTLParser(object):
 
         if unparsed_counter > 0:
             print("Unparsed errors: %d" % unparsed_counter)
+        for req in requests:
+            requests[req]['response_time'] = int(np.percentile(requests[req]['response_time'], 95, interpolation="linear"))
         duration = int((end_timestamp - start_timestamp)/1000)
-        print(duration)
         throughput = self.calculate_throughput(requests, duration)
-        print(throughput)
-        return requests
+        error_rate = self.calculate_error_rate(requests)
 
-    def calculate_throughput(self, requests, duration):
+        results = {"requests": requests, "throughput": throughput, "error_rate": error_rate}
+
+        return results
+
+    @staticmethod
+    def calculate_throughput(requests, duration):
         count = 0
         for req in requests:
             count += requests[req]['OK']
         return round(float(count/duration), 2)
+
+    @staticmethod
+    def calculate_error_rate(requests):
+        count, failed = 0, 0
+        for req in requests:
+            count += requests[req]['OK']
+            count += requests[req]['KO']
+            failed += requests[req]['KO']
+        return round(float(failed/count) * 100, 2)
