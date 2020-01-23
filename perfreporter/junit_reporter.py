@@ -24,7 +24,7 @@ class JUnit_reporter(object):
                                                  stdout="Value: "+str(th['value'])+". Threshold value: "+str(th['threshold'])))
             if th['status'] == 'FAILED':
                 threshold_test_cases[-1].add_failure_info(th['target']+" for " + th['scope'] + " exceeded threshold of "
-                                                          + th['threshold'] + " " + th['metric'] + ". Test result - "
+                                                          + str(th['threshold']) + " " + th['metric'] + ". Test result - "
                                                           + str(th['value']) + " " + th['metric'])
 
         test_suites.append(TestSuite("Thresholds ", threshold_test_cases))
