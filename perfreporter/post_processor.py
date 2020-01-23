@@ -96,28 +96,28 @@ class PostProcessor:
 
         if results['throughput'] < tp_threshold:
             thresholds.append({"target": "throughput", "scope": "all", "value": results['throughput'],
-                               "threshold": tp_threshold, "status": "FAILED"})
+                               "threshold": tp_threshold, "status": "FAILED", "metric": "req/s"})
         else:
             thresholds.append({"target": "throughput", "scope": "all", "value": results['throughput'],
-                               "threshold": tp_threshold, "status": "PASSED"})
+                               "threshold": tp_threshold, "status": "PASSED", "metric": "req/s"})
 
         if results['error_rate'] > er_threshold:
             thresholds.append({"target": "error_rate", "scope": "all", "value": results['error_rate'],
-                               "threshold": er_threshold, "status": "FAILED"})
+                               "threshold": er_threshold, "status": "FAILED", "metric": "%"})
         else:
             thresholds.append({"target": "error_rate", "scope": "all", "value": results['error_rate'],
-                               "threshold": er_threshold, "status": "PASSED"})
+                               "threshold": er_threshold, "status": "PASSED", "metric": "%"})
 
         for req in results['requests']:
 
             if results['requests'][req]['response_time'] > rt_threshold:
                 thresholds.append({"target": "response_time", "scope": results['requests'][req]['request_name'],
                                    "value": results['requests'][req]['response_time'],
-                                   "threshold": rt_threshold, "status": "FAILED"})
+                                   "threshold": rt_threshold, "status": "FAILED", "metric": "ms"})
             else:
                 thresholds.append({"target": "response_time", "scope": results['requests'][req]['request_name'],
                                    "value": results['requests'][req]['response_time'],
-                                   "threshold": rt_threshold, "status": "PASSED"})
+                                   "threshold": rt_threshold, "status": "PASSED", "metric": "ms"})
 
         return thresholds
 

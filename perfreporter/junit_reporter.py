@@ -10,18 +10,22 @@ class JUnit_reporter(object):
         for req in requests:
             if requests[req]['KO'] != 0:
                 functional_test_cases.append(TestCase(name=requests[req]['request_name'], stdout="PASSED: "+str(requests[req]['OK']),
-                                           stderr="FAILED:" + str(requests[req]['KO']), status='FAILED'))
+                                           stderr="FAILED: " + str(requests[req]['KO'])))
+                functional_test_cases[-1].add_failure_info("Request failed "+str(requests[req]['KO']) + " times")
             else:
                 functional_test_cases.append(
                     TestCase(name=requests[req]['request_name'], stdout="PASSED: " + str(requests[req]['OK']),
-                             stderr="FAILED: " + str(requests[req]['KO']), status='PASSED'))
+                             stderr="FAILED: " + str(requests[req]['KO'])))
 
         test_suites.append(TestSuite("Functional errors ", functional_test_cases))
 
         for th in thresholds:
             threshold_test_cases.append(TestCase(name="Threshold for "+th['scope']+", target - "+th['target'],
-                                                 stdout="Value: "+str(th['value'])+". Threshold value: "+str(th['threshold']),
-                                                 status=th['status']))
+                                                 stdout="Value: "+str(th['value'])+". Threshold value: "+str(th['threshold'])))
+            if th['status'] == 'FAILED':
+                threshold_test_cases[-1].add_failure_info(th['target']+" for " + th['scope'] + " exceeded threshold of "
+                                                          + th['threshold'] + " " + th['metric'] + ". Test result - "
+                                                          + str(th['value']) + " " + th['metric'])
 
         test_suites.append(TestSuite("Thresholds ", threshold_test_cases))
         with open("/tmp/reports/jmeter.xml", 'w') as f:
