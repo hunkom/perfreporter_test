@@ -110,11 +110,11 @@ class PostProcessor:
         for req in results['requests']:
 
             if results['requests'][req]['response_time'] > rt_threshold:
-                thresholds.append({"target": "response_time", "scope": "each",
+                thresholds.append({"target": "response_time", "scope": results['requests'][req]['request_name'],
                                    "value": results['requests'][req]['response_time'],
                                    "threshold": rt_threshold, "status": "FAILED"})
             else:
-                thresholds.append({"target": "response_time", "scope": "each",
+                thresholds.append({"target": "response_time", "scope": results['requests'][req]['request_name'],
                                    "value": results['requests'][req]['response_time'],
                                    "threshold": rt_threshold, "status": "PASSED"})
 
