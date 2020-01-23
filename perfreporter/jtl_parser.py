@@ -16,11 +16,11 @@ class JTLParser(object):
         requests = {}
         with open(path, 'r+', encoding="utf-8") as tsv:
             entries = csv.DictReader(tsv, delimiter=",", fieldnames=FIELDNAMES, restval="not_found")
-
+            print("*******************************")
+            print(entries)
+            print("*******************************")
             for entry in entries:
-                print("*******************************")
-                print(entry)
-                print("*******************************")
+
                 try:
                     if entry['request_name'] != 'label':
                         if re.search(r'-\d+$', entry['request_name']):
