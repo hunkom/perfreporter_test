@@ -27,19 +27,19 @@ class JTLParser(object):
                         if re.search(r'-\d+$', entry['request_name']):
                                 continue
                         if start_timestamp > int(entry['timeStamp']):
-                            start_timestamp = int(entry['timeStamp'])
+                            start_timestamp = int(entry['timeStamp']) - int(entry['response_time'])
                         if end_timestamp < int(entry['timeStamp']):
                             end_timestamp = int(entry['timeStamp'])
                         if entry['request_name'] not in requests:
                             data = {'request_name': entry['request_name'],
-                                    'response_time': [entry['response_time']]}
+                                    'response_time': [int(entry['response_time'])]}
                             if entry['success'] == 'true':
                                 data['OK'], data['KO'] = 1, 0
                             else:
                                 data['OK'], data['KO'] = 0, 1
                             requests[entry['request_name']] = data
                         else:
-                            requests[entry['request_name']]['response_time'].append(entry['response_time'])
+                            requests[entry['request_name']]['response_time'].append(int(entry['response_time']))
                             if entry['success'] == 'true':
                                 requests[entry['request_name']]['OK'] += 1
                             else:
