@@ -39,7 +39,8 @@ class PostProcessor:
             print("Error_rate - " + str(results['error_rate']))
             print("******************************")
             thresholds = self.calculate_thresholds(results)
-            print(thresholds)
+            for th in thresholds:
+                print(th)
 
         reporter.report_errors(aggregated_errors, rp_service, jira_service, performance_degradation_rate,
                                compare_with_baseline, missed_threshold_rate, compare_with_thresholds)
