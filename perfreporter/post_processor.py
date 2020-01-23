@@ -1,6 +1,7 @@
 from perfreporter.data_manager import DataManager
 from perfreporter.reporter import Reporter
 from perfreporter.jtl_parser import JTLParser
+from perfreporter.junit_reporter import JUnit_reporter
 import requests
 import re
 import shutil
@@ -41,7 +42,7 @@ class PostProcessor:
             thresholds = self.calculate_thresholds(results)
             for th in thresholds:
                 print(th)
-
+            JUnit_reporter.process_report(aggregated_requests, thresholds)
         reporter.report_errors(aggregated_errors, rp_service, jira_service, performance_degradation_rate,
                                compare_with_baseline, missed_threshold_rate, compare_with_thresholds)
 
