@@ -10,12 +10,12 @@ class JUnit_reporter(object):
         for req in requests:
             if requests[req]['KO'] != 0:
                 functional_test_cases.append(TestCase(name=requests[req]['request_name'], stdout="PASSED: "+str(requests[req]['OK'])+". FAILED: " + str(requests[req]['KO']),
-                                           stderr="FAILED: " + str(requests[req]['KO']), elapsed_sec=requests[req]['KO']))
+                                           stderr="FAILED: " + str(requests[req]['KO'])))
                 functional_test_cases[-1].add_failure_info("Request failed "+str(requests[req]['KO']) + " times")
             else:
                 functional_test_cases.append(
                     TestCase(name=requests[req]['request_name'], stdout="PASSED: " + str(requests[req]['OK']),
-                             stderr="FAILED: " + str(requests[req]['KO']), elapsed_sec=requests[req]['KO']))
+                             stderr="FAILED: " + str(requests[req]['KO'])))
 
         test_suites.append(TestSuite("Functional errors ", functional_test_cases))
 
