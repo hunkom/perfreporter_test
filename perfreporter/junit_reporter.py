@@ -22,7 +22,7 @@ class JUnit_reporter(object):
         test_suites.append(TestSuite("Functional errors ", functional_test_cases))
 
         for th in thresholds:
-            threshold_test_cases.append(TestCase(name="Threshold for {}, target - ".format(th['scope'], th['target']),
+            threshold_test_cases.append(TestCase(name="Threshold for {}, target - {}".format(th['scope'], th['target']),
                                                  stdout="Value: {} {}. Threshold value: {} {}".format(str(th['value']),
                                                                                                 th['metric'],
                                                                                                 str(th['threshold']),

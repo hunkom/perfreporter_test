@@ -34,14 +34,7 @@ class PostProcessor:
             parser = JTLParser()
             results = parser.parse_jtl()
             aggregated_requests = results['requests']
-            for req in aggregated_requests:
-                print(aggregated_requests[req])
-            print("Throughput - " + str(results['throughput']))
-            print("Error_rate - " + str(results['error_rate']))
-            print("******************************")
             thresholds = self.calculate_thresholds(results)
-            for th in thresholds:
-                print(th)
             JUnit_reporter.process_report(aggregated_requests, thresholds)
         reporter.report_errors(aggregated_errors, rp_service, jira_service, performance_degradation_rate,
                                compare_with_baseline, missed_threshold_rate, compare_with_thresholds)
